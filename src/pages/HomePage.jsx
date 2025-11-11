@@ -1,13 +1,12 @@
 "use client"
 
-import { useState } from "react"
-import { ArrowRight, CheckCircle, XCircle, Loader2, ChevronLeft, ChevronRight, Play } from "lucide-react"
+import { useState, useRef } from "react"
+import { ArrowRight, CheckCircle, XCircle, Loader2, ChevronLeft, ChevronRight, Play, Volume2, VolumeX } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import editorImage from "@/assets/editor.png"
-import agentImage from "@/assets/agent.png"
 
 
 export default function HomePage() {
@@ -18,6 +17,10 @@ export default function HomePage() {
   const [errorMessage, setErrorMessage] = useState("")
   const [activeCategory, setActiveCategory] = useState("sliders")
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
+  const [isMuted, setIsMuted] = useState(true)
+  const [isAgentVideoMuted, setIsAgentVideoMuted] = useState(true)
+  const heroVideoRef = useRef(null)
+  const agentVideoRef = useRef(null)
 
   const templates = {
     sliders: [
@@ -52,6 +55,22 @@ export default function HomePage() {
   const switchCategory = (category) => {
     setActiveCategory(category)
     setCurrentVideoIndex(0)
+  }
+
+  const toggleSound = () => {
+    if (heroVideoRef.current) {
+      const newMutedState = !isMuted
+      heroVideoRef.current.muted = newMutedState
+      setIsMuted(newMutedState)
+    }
+  }
+
+  const toggleAgentVideoSound = () => {
+    if (agentVideoRef.current) {
+      const newMutedState = !isAgentVideoMuted
+      agentVideoRef.current.muted = newMutedState
+      setIsAgentVideoMuted(newMutedState)
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -99,10 +118,11 @@ export default function HomePage() {
         {/* Background Video - S-3E-Basic A */}
         <div className="absolute inset-0 z-0">
           <video 
+            ref={heroVideoRef}
             className="w-full h-full object-cover"
             autoPlay 
             loop 
-            muted
+            muted={isMuted}
             playsInline
           >
             <source src="/demo.mp4" type="video/mp4" />
@@ -110,6 +130,19 @@ export default function HomePage() {
           </video>
           <div className="absolute inset-0 bg-black/40"></div>
         </div>
+
+        {/* Sound Toggle Button */}
+        <button
+          onClick={toggleSound}
+          className="absolute bottom-6 right-6 z-[60] bg-white/90 hover:bg-white rounded-full p-3 shadow-lg transition-all hover:scale-110 backdrop-blur-sm"
+          aria-label={isMuted ? "Enable sound" : "Disable sound"}
+        >
+          {isMuted ? (
+            <VolumeX className="w-5 h-5 text-gray-700" />
+          ) : (
+            <Volume2 className="w-5 h-5 text-gray-700" />
+          )}
+        </button>
 
         {/* Hero Content */}
         <div className="relative z-10 text-center max-w-4xl mx-auto">
@@ -240,12 +273,37 @@ export default function HomePage() {
             </div>
             
             <div className="relative rounded-2xl overflow-hidden shadow-xl bg-gray-900 border-2 border-gray-800">
-              <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-4">
-                <img 
-                  src={agentImage}
-                  alt="Vevara Agent in Action"
-                  className="w-full h-auto object-contain rounded-lg shadow-lg"
-                />
+              <div className="aspect-video bg-gray-900">
+                <video 
+                  ref={agentVideoRef}
+                  className="w-full h-full object-cover"
+                  autoPlay 
+                  loop 
+                  muted={isAgentVideoMuted}
+                  playsInline
+                >
+                  <source src="/demo.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+              
+              {/* Sound Toggle Button */}
+              <button
+                onClick={toggleAgentVideoSound}
+                className="absolute top-4 right-4 z-10 bg-white/90 hover:bg-white rounded-full p-2.5 shadow-lg transition-all hover:scale-110 backdrop-blur-sm"
+                aria-label={isAgentVideoMuted ? "Enable sound" : "Disable sound"}
+              >
+                {isAgentVideoMuted ? (
+                  <VolumeX className="w-4 h-4 text-gray-700" />
+                ) : (
+                  <Volume2 className="w-4 h-4 text-gray-700" />
+                )}
+              </button>
+
+              <div className="absolute bottom-4 left-4 right-4">
+                <p className="text-sm text-white/80 font-light italic bg-black/40 backdrop-blur-sm px-4 py-2 rounded-lg inline-block">
+                  Demo created with Vevara Editor
+                </p>
               </div>
             </div>
           </div>
