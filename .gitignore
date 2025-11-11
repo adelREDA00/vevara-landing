@@ -1,0 +1,34 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+
+# production
+/build
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+
+# presentation
+
+# https://www.canva.com/design/DAFyn7tgC4s/iwlXFREPCv_kzzbSRGLsIg/edit?utm_content=DAFyn7tgC4s&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+
+
+# https://www.canva.com/design/DAF0pBFPUcE/3qLQLUTjj0EshegPxpQ5cA/edit?utm_content=DAF0pBFPUcE&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+
+
+
+# https://www.canva.com/design/DAF0nLdBy4U/ybchPkZO9Mo6YHuBd1Yb3Q/edit?utm_content=DAF0nLdBy4U&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
