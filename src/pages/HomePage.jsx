@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { ArrowRight, CheckCircle, XCircle, Loader2, ChevronLeft, ChevronRight, Play, Volume2, VolumeX } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
@@ -19,8 +19,14 @@ export default function HomePage() {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   const [isMuted, setIsMuted] = useState(true)
   const [isAgentVideoMuted, setIsAgentVideoMuted] = useState(true)
+  const [isVideoLoading, setIsVideoLoading] = useState(true)
+  const [isAgentVideoLoading, setIsAgentVideoLoading] = useState(true)
+  const [isCanvaVideoLoading, setIsCanvaVideoLoading] = useState(true)
+  const [isTemplateVideoLoading, setIsTemplateVideoLoading] = useState(true)
   const heroVideoRef = useRef(null)
   const agentVideoRef = useRef(null)
+  const canvaVideoRef = useRef(null)
+  const templateVideoRef = useRef(null)
 
   const templates = {
     sliders: [
@@ -51,6 +57,132 @@ export default function HomePage() {
   const prevVideo = () => {
     setCurrentVideoIndex((prev) => (prev - 1 + currentVideos.length) % currentVideos.length)
   }
+
+  // Hero video loading handler
+  useEffect(() => {
+    const video = heroVideoRef.current
+    if (!video) return
+
+    const handleCanPlay = () => {
+      setIsVideoLoading(false)
+    }
+
+    const handleLoadStart = () => {
+      setIsVideoLoading(true)
+    }
+
+    const handleError = () => {
+      setIsVideoLoading(false)
+    }
+
+    if (video.readyState >= 3) {
+      setIsVideoLoading(false)
+    }
+
+    video.addEventListener('canplay', handleCanPlay)
+    video.addEventListener('loadstart', handleLoadStart)
+    video.addEventListener('error', handleError)
+
+    return () => {
+      video.removeEventListener('canplay', handleCanPlay)
+      video.removeEventListener('loadstart', handleLoadStart)
+      video.removeEventListener('error', handleError)
+    }
+  }, [])
+
+  // Agent video loading handler
+  useEffect(() => {
+    const video = agentVideoRef.current
+    if (!video) return
+
+    const handleCanPlay = () => {
+      setIsAgentVideoLoading(false)
+    }
+
+    const handleLoadStart = () => {
+      setIsAgentVideoLoading(true)
+    }
+
+    const handleError = () => {
+      setIsAgentVideoLoading(false)
+    }
+
+    if (video.readyState >= 3) {
+      setIsAgentVideoLoading(false)
+    }
+
+    video.addEventListener('canplay', handleCanPlay)
+    video.addEventListener('loadstart', handleLoadStart)
+    video.addEventListener('error', handleError)
+
+    return () => {
+      video.removeEventListener('canplay', handleCanPlay)
+      video.removeEventListener('loadstart', handleLoadStart)
+      video.removeEventListener('error', handleError)
+    }
+  }, [])
+
+  // Canva video loading handler
+  useEffect(() => {
+    const video = canvaVideoRef.current
+    if (!video) return
+
+    const handleCanPlay = () => {
+      setIsCanvaVideoLoading(false)
+    }
+
+    const handleLoadStart = () => {
+      setIsCanvaVideoLoading(true)
+    }
+
+    const handleError = () => {
+      setIsCanvaVideoLoading(false)
+    }
+
+    if (video.readyState >= 3) {
+      setIsCanvaVideoLoading(false)
+    }
+
+    video.addEventListener('canplay', handleCanPlay)
+    video.addEventListener('loadstart', handleLoadStart)
+    video.addEventListener('error', handleError)
+
+    return () => {
+      video.removeEventListener('canplay', handleCanPlay)
+      video.removeEventListener('loadstart', handleLoadStart)
+      video.removeEventListener('error', handleError)
+    }
+  }, [])
+
+  // Template video loading handler - resets when video changes
+  useEffect(() => {
+    const video = templateVideoRef.current
+    if (!video) return
+
+    setIsTemplateVideoLoading(true)
+
+    const handleCanPlay = () => {
+      setIsTemplateVideoLoading(false)
+    }
+
+    const handleLoadStart = () => {
+      setIsTemplateVideoLoading(true)
+    }
+
+    const handleError = () => {
+      setIsTemplateVideoLoading(false)
+    }
+
+    video.addEventListener('canplay', handleCanPlay)
+    video.addEventListener('loadstart', handleLoadStart)
+    video.addEventListener('error', handleError)
+
+    return () => {
+      video.removeEventListener('canplay', handleCanPlay)
+      video.removeEventListener('loadstart', handleLoadStart)
+      video.removeEventListener('error', handleError)
+    }
+  }, [activeCategory, currentVideoIndex])
 
   const switchCategory = (category) => {
     setActiveCategory(category)
@@ -117,17 +249,36 @@ export default function HomePage() {
       <section className="relative min-h-screen flex items-center justify-center px-6">
         {/* Background Video - S-3E-Basic A */}
         <div className="absolute inset-0 z-0">
+          {/* Loading Background Gradient */}
+          {isVideoLoading && (
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 animate-pulse"></div>
+          )}
+          
           <video 
             ref={heroVideoRef}
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover transition-opacity duration-500 ${
+              isVideoLoading ? 'opacity-0' : 'opacity-100'
+            }`}
             autoPlay 
             loop 
             muted={isMuted}
             playsInline
+            preload="auto"
           >
             <source src="/demo.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
+          
+          {/* Loading Spinner Overlay */}
+          {isVideoLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className="w-8 h-8 text-white animate-spin" />
+                <p className="text-white/80 text-sm font-light">Loading video...</p>
+              </div>
+            </div>
+          )}
+          
           <div className="absolute inset-0 bg-black/40"></div>
         </div>
 
@@ -150,9 +301,8 @@ export default function HomePage() {
             {/* Main Headline */}
             <div className="space-y-4">
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-light text-white leading-tight tracking-tight">
-                      Canva simplicity. Real motion control
+                Canva simplicity. Real motion control
               </h1>
-            
             </div>
 
             {/* Email Form */}
@@ -211,20 +361,51 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Editor Section */}
+      {/* What is Vevara Section */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-6 tracking-wide">
+              What is Vevara?
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto font-light leading-relaxed mb-8">
+              An online web editor like Canva, but faster and focused on motion. Create high-quality videos, presentations, and animations with smooth motion control.
+            </p>
+            <div className="grid md:grid-cols-3 gap-6 mt-12">
+              <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <div className="text-3xl mb-3">⚡</div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Fast & Simple</h3>
+                <p className="text-gray-600 text-sm font-light">Canva-like simplicity with powerful motion tools</p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <div className="text-3xl mb-3">🎬</div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Motion Focused</h3>
+                <p className="text-gray-600 text-sm font-light">Smooth animations and professional motion control</p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <div className="text-3xl mb-3">✨</div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">High Quality</h3>
+                <p className="text-gray-600 text-sm font-light">Create professional videos and presentations</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Vevara Editor Section */}
+      <section className="py-24 px-6 bg-gray-50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
             <div className="inline-block mb-4">
-              <span className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium">
-                Coming Soon
+              <span className="bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-sm font-medium">
+                Standalone Web Editor
               </span>
             </div>
             <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-6 tracking-wide">
               Vevara Editor
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
-              A motion design tool that combines Canva's simplicity with professional-grade animation and motion control.
+              A web-based motion editor. Create videos, presentations, and animations with smooth motion control, all in your browser.
             </p>
           </div>
 
@@ -237,13 +418,9 @@ export default function HomePage() {
               />
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Vevara Agent Section */}
-      <section className="py-16 px-6 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          {/* Vevara Agent Feature */}
+          <div className="grid md:grid-cols-2 gap-12 items-center mt-16">
             <div>
               <div className="mb-6">
                 <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-sm font-medium mb-4">
@@ -257,7 +434,7 @@ export default function HomePage() {
                 Vevara Agent
               </h3>
               <p className="text-lg text-gray-600 leading-relaxed mb-6">
-                Describe the motion or animation you want in plain English, and our AI agent will create it for you. Then fine-tune every detail to match your vision perfectly. It's like having a motion designer by your side, ready to bring your ideas to life.
+                Describe your animation in plain English, and AI creates it for you. Fine-tune every detail to match your vision.
               </p>
               <div className="flex flex-wrap gap-3">
                 <span className="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium border border-gray-200">
@@ -273,32 +450,52 @@ export default function HomePage() {
             </div>
             
             <div className="relative rounded-2xl overflow-hidden shadow-xl bg-gray-900 border-2 border-gray-800">
-              <div className="aspect-video bg-gray-900">
+              <div className="aspect-video bg-gray-900 relative">
+                {/* Loading Background Gradient */}
+                {isAgentVideoLoading && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 animate-pulse"></div>
+                )}
+                
                 <video 
                   ref={agentVideoRef}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover transition-opacity duration-500 ${
+                    isAgentVideoLoading ? 'opacity-0' : 'opacity-100'
+                  }`}
                   autoPlay 
                   loop 
                   muted={isAgentVideoMuted}
                   playsInline
+                  preload="auto"
                 >
                   <source src="/demo.mp4" type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
+                
+                {/* Loading Spinner Overlay */}
+                {isAgentVideoLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-10">
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      <p className="text-white/80 text-xs font-light">Loading...</p>
+                    </div>
+                  </div>
+                )}
               </div>
               
               {/* Sound Toggle Button */}
-              <button
-                onClick={toggleAgentVideoSound}
-                className="absolute top-4 right-4 z-10 bg-white/90 hover:bg-white rounded-full p-2.5 shadow-lg transition-all hover:scale-110 backdrop-blur-sm"
-                aria-label={isAgentVideoMuted ? "Enable sound" : "Disable sound"}
-              >
-                {isAgentVideoMuted ? (
-                  <VolumeX className="w-4 h-4 text-gray-700" />
-                ) : (
-                  <Volume2 className="w-4 h-4 text-gray-700" />
-                )}
-              </button>
+              {!isAgentVideoLoading && (
+                <button
+                  onClick={toggleAgentVideoSound}
+                  className="absolute top-4 right-4 z-10 bg-white/90 hover:bg-white rounded-full p-2.5 shadow-lg transition-all hover:scale-110 backdrop-blur-sm"
+                  aria-label={isAgentVideoMuted ? "Enable sound" : "Disable sound"}
+                >
+                  {isAgentVideoMuted ? (
+                    <VolumeX className="w-4 h-4 text-gray-700" />
+                  ) : (
+                    <Volume2 className="w-4 h-4 text-gray-700" />
+                  )}
+                </button>
+              )}
 
               <div className="absolute bottom-4 left-4 right-4">
                 <p className="text-sm text-white/80 font-light italic bg-black/40 backdrop-blur-sm px-4 py-2 rounded-lg inline-block">
@@ -312,33 +509,66 @@ export default function HomePage() {
 
       {/* Vevara for Canva Section */}
       <section className="py-24 px-6 bg-white">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <div className="inline-block mb-4">
               <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
-                Coming Soon
+                Canva Integration
               </span>
             </div>
             <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-6 tracking-wide">
               Vevara for Canva
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
-              A dedicated version of Vevara that runs directly inside Canva itself. Coming soon to the Canva App Store. Access hundreds of ready-to-use complex motion templates right within your Canva workspace. Transform static designs into professional animations without leaving Canva.
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto font-light leading-relaxed mb-8">
+              Works inside Canva. Ready-to-use motion templates for presentations, sliders, and more. What takes 10 minutes manually, Vevara does in seconds.
             </p>
+            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mt-12">
+              <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Inside Canva</h3>
+                <p className="text-gray-600 text-sm font-light leading-relaxed">
+                  Runs directly in your Canva workspace. No switching tools or files.
+                </p>
+              </div>
+              <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Ready-to-Use Templates</h3>
+                <p className="text-gray-600 text-sm font-light leading-relaxed">
+                  Hundreds of motion templates for sliders, transitions, and animations. Add content and customize.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="relative rounded-2xl overflow-hidden shadow-xl bg-white">
-            <div className="aspect-video bg-gray-100">
+            <div className="aspect-video bg-gray-100 relative">
+              {/* Loading Background Gradient */}
+              {isCanvaVideoLoading && (
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 animate-pulse"></div>
+              )}
+              
               <video 
-                className="w-full h-full object-cover"
+                ref={canvaVideoRef}
+                className={`w-full h-full object-cover transition-opacity duration-500 ${
+                  isCanvaVideoLoading ? 'opacity-0' : 'opacity-100'
+                }`}
                 autoPlay 
                 loop 
                 muted
                 playsInline
+                preload="auto"
               >
                 <source src="/demo vid.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
+              
+              {/* Loading Spinner Overlay */}
+              {isCanvaVideoLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-10">
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="w-6 h-6 text-gray-700 animate-spin" />
+                    <p className="text-gray-600 text-xs font-light">Loading...</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -348,11 +578,11 @@ export default function HomePage() {
       <section className="py-24 px-6 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-light text-gray-900 mb-4 tracking-wide">
-              Animation Templates
+            <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-4 tracking-wide">
+              Motion Templates Gallery
             </h2>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto font-light">
-              Explore our collection of professional animation templates
+            <p className="text-gray-600 text-lg max-w-3xl mx-auto font-light leading-relaxed">
+              Examples of what you can create. Smooth animations for presentations, videos, and social media. Available in both Editor and Canva versions.
             </p>
           </div>
 
@@ -401,18 +631,37 @@ export default function HomePage() {
               <div className="flex flex-col overflow-hidden">
                 {/* Current Video */}
                 <div className="relative flex-shrink-0 rounded-2xl overflow-hidden shadow-xl bg-white w-full">
-                  <div className="aspect-video bg-gray-100">
+                  <div className="aspect-video bg-gray-100 relative">
+                    {/* Loading Background Gradient */}
+                    {isTemplateVideoLoading && (
+                      <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 animate-pulse"></div>
+                    )}
+                    
                     <video 
+                      ref={templateVideoRef}
                       key={`${activeCategory}-${currentVideoIndex}`}
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover transition-opacity duration-500 ${
+                        isTemplateVideoLoading ? 'opacity-0' : 'opacity-100'
+                      }`}
                       autoPlay 
                       loop 
                       muted
                       playsInline
+                      preload="auto"
                     >
                       <source src={currentVideo.url} type="video/mp4" />
                       Your browser does not support the video tag.
                     </video>
+                    
+                    {/* Loading Spinner Overlay */}
+                    {isTemplateVideoLoading && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-10">
+                        <div className="flex flex-col items-center gap-2">
+                          <Loader2 className="w-6 h-6 text-gray-700 animate-spin" />
+                          <p className="text-gray-600 text-xs font-light">Loading...</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Navigation Arrows */}
@@ -494,10 +743,10 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10 md:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-light text-gray-900 mb-4 md:mb-6 tracking-wide">
-              You Get Both
+              Two Ways to Create Motion Content
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-light px-2">
-              Two powerful tools working together to transform how you create motion content
+              Choose the tool that fits your workflow: standalone editor or Canva integration
             </p>
           </div>
           
@@ -505,13 +754,13 @@ export default function HomePage() {
             {/* Vevara Editor - Main App */}
             <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 md:p-8 border-2 border-gray-200">
               <div className="mb-6">
-                <span className="bg-gray-200 text-gray-700 px-4 py-2 rounded-full text-sm font-medium">
-                  Coming Soon
+                <span className="bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-sm font-medium">
+                  Standalone Web Editor
                 </span>
               </div>
               <h3 className="text-xl md:text-2xl lg:text-3xl font-light text-gray-900 mb-3 md:mb-4">Vevara Editor</h3>
               <p className="text-gray-700 leading-relaxed mb-4 md:mb-6 text-base md:text-lg">
-                <strong>The main app</strong> with its own editor and powerful motion engine. Think of it as Canva on steroids—giving you the power to create high-quality animations and motion with the same simplicity of Canva. <strong>Zero learning curve.</strong>
+                A web-based motion editor. Create videos, presentations, and animations with smooth motion control, all in your browser.
               </p>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
@@ -519,8 +768,8 @@ export default function HomePage() {
                     <span className="text-white text-xs font-bold">✓</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 mb-1 text-sm md:text-base">Full-Featured Editor</p>
-                    <p className="text-gray-600 text-xs md:text-sm">Complete motion design workspace</p>
+                    <p className="font-semibold text-gray-900 mb-1 text-sm md:text-base">Full Motion Editor</p>
+                    <p className="text-gray-600 text-xs md:text-sm">Complete workspace for creating motion content</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -528,8 +777,8 @@ export default function HomePage() {
                     <span className="text-white text-xs font-bold">✓</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 mb-1 text-sm md:text-base">Own Powerful Engine</p>
-                    <p className="text-gray-600 text-xs md:text-sm">Professional-grade animation capabilities</p>
+                    <p className="font-semibold text-gray-900 mb-1 text-sm md:text-base">Smooth Animation Control</p>
+                    <p className="text-gray-600 text-xs md:text-sm">Professional-grade motion and animation tools</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -537,8 +786,8 @@ export default function HomePage() {
                     <span className="text-white text-xs font-bold">✓</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 mb-1 text-sm md:text-base">Vevara Agent</p>
-                    <p className="text-gray-600 text-xs md:text-sm">AI-powered text-to-animation feature</p>
+                    <p className="font-semibold text-gray-900 mb-1 text-sm md:text-base">Vevara Agent (AI)</p>
+                    <p className="text-gray-600 text-xs md:text-sm">Text-to-animation powered by AI</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -546,8 +795,8 @@ export default function HomePage() {
                     <span className="text-white text-xs font-bold">✓</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 mb-1 text-sm md:text-base">Canva Simplicity</p>
-                    <p className="text-gray-600 text-xs md:text-sm">Same ease of use, zero learning curve</p>
+                    <p className="font-semibold text-gray-900 mb-1 text-sm md:text-base">Zero Learning Curve</p>
+                    <p className="text-gray-600 text-xs md:text-sm">Canva-like simplicity, no design skills needed</p>
                   </div>
                 </div>
               </div>
@@ -556,13 +805,13 @@ export default function HomePage() {
             {/* Vevara for Canva */}
             <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 md:p-8 border-2 border-blue-200">
               <div className="mb-4 md:mb-6">
-                <span className="bg-blue-200 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
-                  Coming Soon
+                <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
+                  Canva Integration
                 </span>
               </div>
               <h3 className="text-xl md:text-2xl lg:text-3xl font-light text-gray-900 mb-3 md:mb-4">Vevara for Canva</h3>
               <p className="text-gray-700 leading-relaxed mb-4 md:mb-6 text-base md:text-lg">
-                <strong>An app that runs inside Canva</strong>—it's a library of ready-to-use motion templates designed to save you time. What would normally take 10 minutes of placing and adjusting elements, Vevara does in 5 seconds.
+                Works inside Canva. Ready-to-use motion templates for presentations, sliders, and more. What takes 10 minutes manually, Vevara does in seconds.
               </p>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
@@ -570,8 +819,8 @@ export default function HomePage() {
                     <span className="text-white text-xs font-bold">✓</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 mb-1 text-sm md:text-base">Runs Inside Canva</p>
-                    <p className="text-gray-600 text-xs md:text-sm">Works directly within your Canva workspace</p>
+                    <p className="font-semibold text-gray-900 mb-1 text-sm md:text-base">Inside Canva</p>
+                    <p className="text-gray-600 text-xs md:text-sm">Runs directly in your Canva workspace</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -579,8 +828,8 @@ export default function HomePage() {
                     <span className="text-white text-xs font-bold">✓</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 mb-1 text-sm md:text-base">Template Library</p>
-                    <p className="text-gray-600 text-xs md:text-sm">Ready-to-use motion templates</p>
+                    <p className="font-semibold text-gray-900 mb-1 text-sm md:text-base">Motion Templates</p>
+                    <p className="text-gray-600 text-xs md:text-sm">Ready-to-use sliders, transitions, animations</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -589,7 +838,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <p className="font-semibold text-gray-900 mb-1 text-sm md:text-base">Save Time</p>
-                    <p className="text-gray-600 text-xs md:text-sm">10 minutes of work done in 5 seconds</p>
+                    <p className="text-gray-600 text-xs md:text-sm">Complex animations in seconds, not minutes</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -597,8 +846,8 @@ export default function HomePage() {
                     <span className="text-white text-xs font-bold">✓</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 mb-1 text-sm md:text-base">Canva App Store</p>
-                    <p className="text-gray-600 text-xs md:text-sm">Coming soon to the official Canva App Store</p>
+                    <p className="font-semibold text-gray-900 mb-1 text-sm md:text-base">Perfect for Presentations</p>
+                    <p className="text-gray-600 text-xs md:text-sm">Ideal for slides, social media, and marketing</p>
                   </div>
                 </div>
               </div>
