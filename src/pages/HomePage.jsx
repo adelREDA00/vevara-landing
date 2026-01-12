@@ -383,6 +383,17 @@ export default function HomePage() {
                   <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
               </a>
+              <div className="mt-8 rounded-xl overflow-hidden shadow-lg">
+                <video
+                  className="w-full h-auto max-h-[400px] object-cover"
+                  controls
+                  preload="metadata"
+                  poster="/thumbnail.png"
+                >
+                  <source src="/vevaramain.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
             </div>
 
             <div className="bg-purple-200 rounded-[2rem] p-8 md:p-12 hover:bg-purple-300 transition-all duration-300">
@@ -437,21 +448,6 @@ export default function HomePage() {
                     But the Canva SDK had limits, so some of the motion we wanted wasn't possible. That's why I'm building the standalone editor now.
                     </p>
                   </div>
-                </div>
-
-                {/* Demo Video */}
-                <div className="mt-8">
-                  <video
-                    className="w-full rounded-xl border-2 border-[#8B5CF6] shadow-lg"
-                    controls
-                    poster="/editor.png"
-                  >
-                    <source src="/demo vid.mp4" type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                  <p className="text-neutral-700 text-sm mt-3 text-center">
-                    Watch Vevara templates in action inside Canva (before the standalone editor)
-                  </p>
                 </div>
               </div>
             </div>
