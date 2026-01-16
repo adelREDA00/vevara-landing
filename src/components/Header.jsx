@@ -26,7 +26,7 @@ export default function Header() {
         <Link to="/" className="flex items-center space-x-2 group cursor-pointer">
           <div className="rounded-lg">
             <img
-              src="/ChatGPT Image 19 mai 2025, 22_38_42.png"
+              src="/logo1.png"
               alt="Vevara"
               width={28}
               height={28}

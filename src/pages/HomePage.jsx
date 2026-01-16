@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { toast } from "sonner"
 
 export default function HomePage() {
@@ -8,6 +8,36 @@ export default function HomePage() {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+
+  // Lazy video hooks for each video
+  const [firstVideoRef, firstVideoInView] = useLazyVideo()
+  const [secondVideoRef, secondVideoInView] = useLazyVideo()
+
+  // Custom hook for lazy loading videos
+  function useLazyVideo() {
+    const videoRef = useRef(null)
+    const [isInView, setIsInView] = useState(false)
+
+    useEffect(() => {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setIsInView(true)
+            observer.disconnect()
+          }
+        },
+        { threshold: 0.1, rootMargin: '100px' }
+      )
+
+      if (videoRef.current) {
+        observer.observe(videoRef.current)
+      }
+
+      return () => observer.disconnect()
+    }, [])
+
+    return [videoRef, isInView]
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -80,7 +110,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-neutral-50 text-neutral-900">
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 delay-75 ${isScrolled ? 'bg-black/40 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'} ${isMenuOpen ? '-translate-y-full' : 'translate-y-0'}`}>
         <div className="max-w-7xl mx-auto px-6 md:px-8 py-4 flex justify-between items-center">
-          <div className={`text-2xl font-bold tracking-tight ${isScrolled ? 'text-white' : 'text-neutral-900'}`}>Vevara</div>
+          <div className={`text-2xl font-bold tracking-tight text-white`}>Vevara</div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -123,7 +153,7 @@ export default function HomePage() {
           {/* Close button */}
           <button
             onClick={() => setIsMenuOpen(false)}
-            className="absolute top-4 right-6 w-10 h-10 rounded-lg text-white flex items-center justify-center hover:text-neutral-300 transition-colors border-2 border-[#8B5CF6]"
+            className="absolute top-4 right-6 w-8 h-8 bg-neutral-900 text-white flex items-center justify-center hover:bg-neutral-800 transition-all border-2 border-[#8B5CF6]"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -165,7 +195,81 @@ export default function HomePage() {
         </div>
       </div>
 
-      <section className="relative min-h-screen flex items-center justify-center pt-32 pb-24 bg-neutral-50 overflow-hidden">
+      <section className="relative min-h-screen flex items-center justify-center pt-32 pb-24 overflow-hidden">
+        {/* Video Background */}
+        <video
+          className="absolute inset-0 w-full h-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="none"
+          poster="/ph1.png"
+        >
+          <source src="/demo.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-black/40"></div>
+
+        <div className="relative z-10 max-w-5xl mx-auto px-6 md:px-8 w-full">
+          <div className="text-center mb-16">
+            <span className="inline-block bg-[#8B5CF6] text-white px-5 py-2 rounded-full text-sm font-bold mb-8 shadow-lg shadow-purple-500/20">
+              comming soon
+            </span>
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight mb-8 leading-[1.1] text-balance">
+Motion-first presentations and short videos
+            </h1>
+            <p className="text-white text-xl md:text-2xl mb-4 max-w-2xl mx-auto leading-relaxed">
+Built for Canva users who want more control          </p>
+
+            <form onSubmit={handleWaitlistSubmit} className="max-w-4xl mx-auto mb-20">
+              <div className="flex flex-col md:flex-row gap-3 md:gap-0">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  required
+                  disabled={isLoading}
+                  className="flex-1 px-6 py-4 bg-white border border-neutral-300 rounded-2xl md:rounded-r-none text-neutral-900 placeholder:text-neutral-400 text-base focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all disabled:opacity-50"
+                />
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="md:w-auto w-full bg-neutral-900 text-white px-8 py-5 text-base font-semibold rounded-2xl md:rounded-l-none hover:bg-neutral-800 transition-all active:scale-[0.98] shadow-lg whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <span>Loading...</span>
+                  ) : (
+                    <>
+                      <span className="hidden md:inline">Join the waitlist</span>
+                      <span className="md:hidden">Join the waitlist</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* <div className="relative inline-block mx-auto">
+            <img
+              src="/editor.png"
+              alt="Vevara Editor Interface"
+              className="w-full max-w-4xl border-2 border-[#8B5CF6]"
+            />
+            
+            <div className="absolute -top-1 -left-1 w-3 h-3 bg-white border-2 border-[#8B5CF6] rounded-full"></div>
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-white border-2 border-[#8B5CF6] rounded-full"></div>
+            <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-white border-2 border-[#8B5CF6] rounded-full"></div>
+            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-white border-2 border-[#8B5CF6] rounded-full"></div>
+          </div> */}
+        </div>
+      </section>
+
+      {/* When you want more than basic animations Section */}
+      <section id="features" className="relative py-32 md:py-40 bg-white overflow-hidden">
         {/* Floating selected text element - top left */}
         <div className="absolute top-40 left-4 lg:left-32 hidden lg:block">
           <div className="relative group scale-75 md:scale-100">
@@ -257,73 +361,11 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="relative z-10 max-w-5xl mx-auto px-6 md:px-8 w-full">
-          <div className="text-center mb-16">
-            <span className="inline-block bg-[#8B5CF6] text-white px-5 py-2 rounded-full text-sm font-bold mb-8 shadow-lg shadow-purple-500/20">
-              comming soon
-            </span>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-neutral-900 tracking-tight mb-8 leading-[1.1] text-balance">
-              
-            Motion-first presentations and short videos
-            </h1>
-            <p className="text-neutral-700 text-xl md:text-2xl mb-4 max-w-2xl mx-auto leading-relaxed">
-              
-            Built for Canva users who want more control          </p>
-
-            <form onSubmit={handleWaitlistSubmit} className="max-w-4xl mx-auto mb-20">
-              <div className="flex flex-col md:flex-row gap-3 md:gap-0">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  required
-                  disabled={isLoading}
-                  className="flex-1 px-6 py-4 bg-white border border-neutral-300 rounded-2xl md:rounded-r-none text-neutral-900 placeholder:text-neutral-400 text-base focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all disabled:opacity-50"
-                />
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="md:w-auto w-full bg-neutral-900 text-white px-8 py-5 text-base font-semibold rounded-2xl md:rounded-l-none hover:bg-neutral-800 transition-all active:scale-[0.98] shadow-lg whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <span>Loading...</span>
-                  ) : (
-                    <>
-                      <span className="hidden md:inline">Join the waitlist</span>
-                      <span className="md:hidden">Join the waitlist</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <div className="relative inline-block mx-auto">
-            <img
-              src="/editor.png"
-              alt="Vevara Editor Interface"
-              className="w-full max-w-4xl border-2 border-[#8B5CF6]"
-            />
-            {/* Corner handles */}
-            <div className="absolute -top-1 -left-1 w-3 h-3 bg-white border-2 border-[#8B5CF6] rounded-full"></div>
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-white border-2 border-[#8B5CF6] rounded-full"></div>
-            <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-white border-2 border-[#8B5CF6] rounded-full"></div>
-            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-white border-2 border-[#8B5CF6] rounded-full"></div>
-          </div>
-        </div>
-      </section>
-
-      {/* When you want more than basic animations Section */}
-      <section id="features" className="py-32 md:py-40 bg-white">
         <div className="max-w-6xl mx-auto px-6 md:px-8">
           <div className="max-w-4xl mx-auto">
-            <div className="relative border-2 border-dotted border-[#8B5CF6] p-12 md:p-16">
+            <div className="relative p-12 md:p-16">
               {/* Corner handles */}
-              <div className="absolute -top-3 -left-3 w-5 h-5 bg-white border-2 border-[#8B5CF6] rounded-full translate-x-0.5 translate-y-0.5"></div>
-              <div className="absolute -top-3 -right-3 w-5 h-5 bg-white border-2 border-[#8B5CF6] rounded-full translate-x-0.5 -translate-y-0.5"></div>
-              <div className="absolute -bottom-3 -left-3 w-5 h-5 bg-white border-2 border-[#8B5CF6] rounded-full -translate-x-0.5 translate-y-0.5"></div>
-              <div className="absolute -bottom-3 -right-3 w-5 h-5 bg-white border-2 border-[#8B5CF6] rounded-full -translate-x-0.5 -translate-y-0.5"></div>
+
 
               <div className="text-center">
                 <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-neutral-900 tracking-tight mb-8 leading-[1.1] text-balance">
@@ -383,14 +425,18 @@ export default function HomePage() {
                   <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
               </a>
-              <div className="mt-8 rounded-xl overflow-hidden shadow-lg">
+              <div className="mt-8 rounded-xl overflow-hidden shadow-lg" ref={firstVideoRef}>
                 <video
                   className="w-full h-auto max-h-[400px] object-cover"
                   controls
-                  preload="metadata"
+                  autoPlay={firstVideoInView}
+                  muted
+                  loop
+                  playsInline
+                  preload={firstVideoInView ? "metadata" : "none"}
                   poster="/thumbnail.png"
                 >
-                  <source src="/vevaramain.mp4" type="video/mp4" />
+                  {firstVideoInView && <source src="/vevaramain.mp4" type="video/mp4" />}
                   Your browser does not support the video tag.
                 </video>
               </div>
@@ -449,6 +495,20 @@ export default function HomePage() {
                     </p>
                   </div>
                 </div>
+              </div>
+              <div className="mt-8 rounded-xl overflow-hidden shadow-lg" ref={secondVideoRef}>
+                <video
+                  className="w-full h-auto max-h-[400px] object-cover"
+                  controls
+                  autoPlay={secondVideoInView}
+                  muted
+                  loop
+                  playsInline
+                  preload={secondVideoInView ? "metadata" : "none"}
+                >
+                  {secondVideoInView && <source src="/demo vid.mp4" type="video/mp4" />}
+                  Your browser does not support the video tag.
+                </video>
               </div>
             </div>
           </div>
